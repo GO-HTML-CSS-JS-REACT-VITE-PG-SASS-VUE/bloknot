@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Блокноты проекта на год</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f7fa;
+      color: #333;
+      padding: 20px;
+      line-height: 1.5;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #2c3e50;
+      font-weight: 700;
+    }
+
+    .blocks-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+      gap: 25px;
+      max-width: 1800px;
+      margin: 0 auto;
+    }
+
+    .notebook-block {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+
+    .block-header {
+      background: linear-gradient(135deg, #3498db, #2980b9);
+      color: white;
+      padding: 16px 20px;
+      font-size: 1.4rem;
+      font-weight: 600;
+    }
+
+    .notebooks-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      padding: 16px;
+      background: #fafafa;
+    }
+
+    .notebook {
+      background: white;
+      border: 1px solid #e0e6ed;
+      border-radius: 8px;
+      min-height: 120px;
+      padding: 12px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+      overflow-wrap: break-word;
+    }
+
+    .notebook:hover {
+      border-color: #bdc3c7;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+
+    .notebook:focus {
+      border-color: #3498db;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    }
+
+    .notebook-placeholder::before {
+      content: attr(data-placeholder);
+      color: #95a5a6;
+      pointer-events: none;
+    }
+
+    .controls {
+      text-align: center;
+      margin: 30px 0;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #2ecc71, #27ae60);
+      color: white;
+      border: none;
+      padding: 14px 32px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(46, 204, 113, 0.4);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    #masterNotebookContainer {
+      display: none;
+      max-width: 1200px;
+      margin: 40px auto;
+      background: white;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    #masterNotebookHeader {
+      background: linear-gradient(135deg, #9b59b6, #8e44ad);
+      color: white;
+      padding: 20px;
+      font-size: 1.6rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    #masterNotebook {
+      padding: 24px;
+      min-height: 300px;
+      font-size: 1.05rem;
+      line-height: 1.7;
+      overflow-wrap: break-word;
+      white-space: pre-wrap;
+    }
+
+    .section-title {
+      color: #2c3e50;
+      margin: 24px 0 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #3498db;
+      font-size: 1.4rem;
+    }
+
+    .note-title {
+      display: inline-block;
+      background: #f1c40f;
+      color: #2c3e50;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      margin: 6px 0;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      color: #7f8c8d;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      .blocks-container {
+        grid-template-columns: 1fr;
+      }
+      .notebooks-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .btn {
+        width: 90%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .notebooks-grid {
+        grid-template-columns: 1fr;
+      }
+      #masterNotebook {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>📚 Совместные блокноты проекта на год</h1>
+  <div class="blocks-container" id="blocksContainer"></div>
+
+  <div class="controls">
+    <button class="btn" id="compileBtn">📝 Собрать всё в главный блокнот</button>
+  </div>
+
+  <div id="masterNotebookContainer">
+    <div id="masterNotebookHeader">Главный блокнот: Итоговый отчёт проекта</div>
+    <div id="masterNotebook"></div>
+  </div>
+
+  <footer>
+    ⚠️ Примечание: изменения сохраняются только в текущей сессии (до перезагрузки страницы).<br>
+    Для совместного редактирования в реальном времени требуется сервер с WebSocket.
+  </footer>
+
+  <script>
+    const blocks = [
+      { id: 'q1', title: 'Q1: Планирование и запуск' },
+      { id: 'q2', title: 'Q2: Разработка и итерации' },
+      { id: 'q3', title: 'Q3: Тестирование и стабилизация' },
+      { id: 'q4', title: 'Q4: Релиз и анализ' }
+    ];
+
+    const notebookData = {};
+
+    function init() {
+      const container = document.getElementById('blocksContainer');
+      
+      blocks.forEach(block => {
+        const blockEl = document.createElement('div');
+        blockEl.className = 'notebook-block';
+        
+        blockEl.innerHTML = `
+          <div class="block-header">${block.title}</div>
+          <div class="notebooks-grid" id="grid-${block.id}"></div>
+        `;
+        
+        container.appendChild(blockEl);
+        
+        const grid = document.getElementById(`grid-${block.id}`);
+        
+        for (let i = 1; i <= 20; i++) {
+          const notebookId = `${block.id}-note-${i}`;
+          notebookData[notebookId] = '';
+          
+          const notebookEl = document.createElement('div');
+          notebookEl.className = 'notebook notebook-placeholder';
+          notebookEl.contentEditable = true;
+          notebookEl.dataset.placeholder = `Блокнот ${i} — начните писать...`;
+          notebookEl.id = notebookId;
+          
+          notebookEl.addEventListener('input', function() {
+            notebookData[notebookId] = this.innerHTML;
+            if (this.innerHTML.trim() !== '') {
+              this.classList.remove('notebook-placeholder');
+            } else {
+              this.classList.add('notebook-placeholder');
+            }
+          });
+          
+          grid.appendChild(notebookEl);
+        }
+      });
+
+      // Кнопка сборки
+      document.getElementById('compileBtn').addEventListener('click', compileMasterNotebook);
+    }
+
+    function compileMasterNotebook() {
+      let masterContent = '';
+      
+      blocks.forEach(block => {
+        let blockContent = '';
+        
+        for (let i = 1; i <= 20; i++) {
+          const notebookId = `${block.id}-note-${i}`;
+          const content = notebookData[notebookId] || '';
+          // Очищаем HTML от тегов для текстового отображения (сохраняя переносы)
+          const text = content
+            .replace(/<br\s*\/?>/gi, '\n')
+            .replace(/<\/?[^>]+(>|$)/g, '')
+            .trim();
+          
+          if (text) {
+            blockContent += `\n  📝 <span class="note-title">Блокнот ${i}</span>\n${text}\n`;
+          }
+        }
+        
+        if (blockContent) {
+          masterContent += `\n<h2 class="section-title">${block.title}</h2>\n${blockContent}`;
+        }
+      });
+      
+      if (masterContent) {
+        document.getElementById('masterNotebook').innerHTML = masterContent;
+        document.getElementById('masterNotebookContainer').style.display = 'block';
+        
+        // Прокрутка к главному блокноту
+        document.getElementById('masterNotebookContainer').scrollIntoView({ behavior: 'smooth' });
+      } else {
+        alert('Все блокноты пусты. Напишите что-нибудь в любом блокноте и попробуйте снова.');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
+
